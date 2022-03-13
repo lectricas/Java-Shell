@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class Command {
-    String name;
+    private String name;
+    private Token token;
     List<String> arguments = new ArrayList<>();
 
     public Command(){
@@ -15,6 +16,20 @@ public class Command {
     public Command(String name, List<String> arguments) {
         this.name = name;
         this.arguments = arguments;
+    }
+
+//    public void setLeadingToken(Token token) {
+//        if (this.token == null) {
+//            this.token = token;
+//        }
+//    }
+//
+//    public Token getLeadingToken() {
+//        return token;
+//    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public List<String> getArguments() {

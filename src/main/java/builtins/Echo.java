@@ -2,6 +2,7 @@ package builtins;
 
 import org.jetbrains.annotations.Nullable;
 import parser.Command;
+import parser.MainConsole;
 
 public class Echo {
     public static String execute(Command command, @Nullable String stdin) {
@@ -12,7 +13,15 @@ public class Echo {
             }
         } else {
             for (String arg : command.getArguments()) {
-                echoWhat.append(arg);
+                if (arg.startsWith("$")) {
+                    String key = arg.substring(1);
+                    if (MainConsole.variables.containsKey(key)) {
+                        echoWhat.append(MainConsole.variables.get(key));
+                    }
+
+                } else {
+                    echoWhat.append(arg);
+                }
             }
             echoWhat.append("\n");
         }

@@ -5,10 +5,14 @@ import builtins.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
-public class Main {
+public class MainConsole {
+
+    public static Map<String, String> variables = new HashMap<>();
 
     public static void main(String[] args) {
         Parser p = new Parser();
@@ -19,10 +23,12 @@ public class Main {
             System.out.print("prelude>");
             try {
                 commandLine = console.readLine();
-                List<Command> commands = p.parseInput(commandLine);
-                String output = null;
+                ParseResult result = p.parseInput(commandLine);
+                List<Command> commands = result.getCommands();
+                List<String> assignments = result.getAssignments();
+                String output = "";
                 for (Command c : commands) {
-                    switch (c.name) {
+                    switch (c.getName()) {
                         case "echo" -> {
                             output = Echo.execute(c, output);
                         }
@@ -39,7 +45,12 @@ public class Main {
                         default -> System.out.println("No such command");
                     }
                 }
-                System.out.println(output);
+
+                for (String assignment: assignments) {
+                    output = EnvMover.execute(assignment, output);
+                }
+
+                System.out.print(output);
 
             } catch (IOException | UnexpectedTokenException | NoSuchFileException e) {
                 System.out.println(e.getMessage());
