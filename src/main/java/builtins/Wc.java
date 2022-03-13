@@ -10,14 +10,14 @@ import java.nio.file.Paths;
 import java.util.regex.Pattern;
 
 public class Wc {
-    public static String execute(Command command, String stdin) {
+    public static String execute(Command command, String stdin) throws NoSuchFileException {
         if (!command.getArguments().isEmpty()) {
             try {
                 Path path = Paths.get(command.getArguments().get(0));
                 String content = Files.readString(path, StandardCharsets.US_ASCII);
                 return wcInner(content);
             } catch (IOException e) {
-                throw new IllegalArgumentException("No such file");
+                throw new NoSuchFileException("No such file");
             }
         } else if (stdin != null) {
             return wcInner(stdin);
@@ -34,6 +34,6 @@ public class Wc {
         long wordCount = input.lines()
                 .flatMap(nonWordPattern::splitAsStream)
                 .filter(str -> !str.isEmpty()).count();
-        return lineCount + " " + wordCount + " " + charCount;
+        return lineCount + " " + wordCount + " " + charCount + "\n";
     }
 }

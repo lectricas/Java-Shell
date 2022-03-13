@@ -19,16 +19,21 @@ public class Cat {
             }
             i++;
         }
-        StringBuilder concatinated = new StringBuilder();
+
+        if (i == args.size()) {
+            return stdin;
+        }
+
+        StringBuilder concatenated = new StringBuilder();
         while (i < args.size()) {
             try {
                 Path path = Paths.get(args.get(i));
-                concatinated.append(Files.readString(path, StandardCharsets.US_ASCII));
+                concatenated.append(Files.readString(path, StandardCharsets.UTF_8));
             } catch (IOException e) {
                 throw new NoSuchFileException("No such file " +args.get(i));
             }
             i++;
         }
-        return concatinated.toString();
+        return concatenated.toString();
     }
 }
