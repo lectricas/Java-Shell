@@ -1,28 +1,37 @@
 package builtins;
 
 import org.jetbrains.annotations.Nullable;
-import parser.Command;
-import parser.MainConsole;
+import parser.*;
 
 public class Echo {
-    public static String execute(Command command, @Nullable String stdin) {
+    public static String execute1(Expr.Command command, @Nullable String stdin) {
         StringBuilder echoWhat = new StringBuilder();
-        if (!command.getArguments().isEmpty() && command.getArguments().get(0).equals("-n")) {
-            for (int i = 1; i < command.getArguments().size(); i++) {
-                echoWhat.append(command.getArguments().get(i));
-            }
-        } else {
-            for (String arg : command.getArguments()) {
-                if (arg.startsWith("$")) {
-                    String key = arg.substring(1);
-                    if (MainConsole.variables.containsKey(key)) {
-                        echoWhat.append(MainConsole.variables.get(key));
-                    }
 
+        int i = 0;
+        boolean flag = true;
+        if (!command.arguments.isEmpty() && command.arguments.get(0).literal.equals("-n")) {
+            i = 1;
+            flag = false;
+        }
+
+        for (; i < command.arguments.size(); i++) {
+            Token tok = command.arguments.get(i);
+            if (tok.type == TokenType.SINGLE_S) {
+                echoWhat.append(tok.literal);
+            } else if (tok.type == TokenType.DOUBLE_S) {
+                echoWhat.append(Bash.runExternal(tok.literal));
+            } else {
+                if (tok.literal.startsWith("$")) {
+                    String key = tok.literal.substring(1);
+                    echoWhat.append(Interpreter.environment.get(key));
                 } else {
-                    echoWhat.append(arg);
+                    echoWhat.append(tok.literal);
                 }
             }
+            echoWhat.append(" ");
+        }
+
+        if (flag) {
             echoWhat.append("\n");
         }
         return echoWhat.toString();

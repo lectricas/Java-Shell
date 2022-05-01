@@ -1,6 +1,7 @@
 package builtins;
 
-import parser.Command;
+import parser.Bash;
+import parser.Expr;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -10,14 +11,15 @@ import java.nio.file.Paths;
 import java.util.regex.Pattern;
 
 public class Wc {
-    public static String execute(Command command, String stdin) throws NoSuchFileException {
-        if (!command.getArguments().isEmpty()) {
+    public static String execute1(Expr.Command command, String stdin) {
+        if (!command.arguments.isEmpty()) {
             try {
-                Path path = Paths.get(command.getArguments().get(0));
+                Path path = Paths.get(command.arguments.get(0).literal);
                 String content = Files.readString(path, StandardCharsets.US_ASCII);
                 return wcInner(content);
             } catch (IOException e) {
-                throw new NoSuchFileException("No such file");
+                Bash.error("no such file");
+                return "";
             }
         } else if (stdin != null) {
             return wcInner(stdin);

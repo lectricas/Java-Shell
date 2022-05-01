@@ -1,104 +1,128 @@
 package parser;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import static parser.TokenType.*;
+
 
 public class Parser {
+    private static class ParseError extends RuntimeException {
+    }
 
-    private final Map<State, Map<Token, State>> states = new HashMap<>() {{
-        put(State.START, new HashMap<>() {{
-            put(Token.PIPE1, State.ERROR);
-            put(Token.WORD, State.PROGRAM);
-            put(Token.VARIABLE, State.ASSIGNMENT);
-            put(Token.DOUBLE, State.DOUBLE_QUOTES);
-        }});
-        put(State.PROGRAM, new HashMap<>() {{
-            put(Token.PIPE1, State.START);
-            put(Token.WORD, State.CLI);
-            put(Token.VARIABLE, State.CLI);
-            put(Token.DOUBLE, State.DOUBLE_QUOTES);
-        }});
-        put(State.CLI, new HashMap<>() {{
-            put(Token.PIPE1, State.START);
-            put(Token.WORD, State.CLI);
-            put(Token.VARIABLE, State.CLI);
-            put(Token.DOUBLE, State.CLI);
-        }});
+    private final List<Token> tokens;
+    private int current = 0;
 
-        put(State.ASSIGNMENT, new HashMap<>() {{
-            put(Token.VARIABLE, State.ASSIGNMENT);
-            put(Token.WORD, State.START);
-            put(Token.PIPE1, State.START);
-            put(Token.DOUBLE, State.START);
-        }});
+    public Parser(List<Token> tokens) {
+        this.tokens = tokens;
+    }
 
-        put(State.DOUBLE_QUOTES, new HashMap<>() {{
-            put(Token.DOUBLE, State.DOUBLE_QUOTES);
-            put(Token.VARIABLE, State.CLI);
-            put(Token.WORD, State.CLI);
-            put(Token.PIPE1, State.START);
-        }});
-    }};
+    public Expr parse() {
+        return pipe();
+    }
 
 
-    public ParseResult parseInput(String input) throws UnexpectedTokenException {
-        StringBuilder tokenPatternsBuffer = new StringBuilder();
-        for (Token token : Token.values())
-            tokenPatternsBuffer.append(String.format("|(?<%s>%s)", token.name(), token.pattern));
-        Pattern tokenPatterns = Pattern.compile(tokenPatternsBuffer.substring(1));
+    private Expr pipe() {
+        Expr expr = application();
 
-        Matcher matcher = tokenPatterns.matcher(input);
-        int position = 0;
-        List<Command> commands = new ArrayList<>();
-        List<String> assignments = new ArrayList<>();
-        List<String> doubleQuotes = new ArrayList<>();
-        Command currentCommand = new Command();
-        commands.add(currentCommand);
-        State state = State.START;
-        while (position < input.length()) {
-            if (matcher.find(position)) {
-                for (Token token : Token.values()) {
-                    if (matcher.group(token.name()) != null) {
-                        state = states.get(state).get(token);
-                        switch (state) {
-                            case START -> {
-                                currentCommand = new Command();
-                                commands.add(currentCommand);
-                                assignments.clear();
-                            }
+        while (match(PIPE)) {
+            Expr right = application();
+            expr = new Expr.Pipe(expr, right);
+        }
 
-                            case ASSIGNMENT -> {
-                                commands.clear();
-                                assignments.add(matcher.group(token.name()));
-                            }
+        return expr;
+    }
 
-                            case DOUBLE_QUOTES -> {
-                                doubleQuotes.add(matcher.group(token.name()));
-                            }
-
-                            case PROGRAM -> {
-                                currentCommand.setName(matcher.group(token.name()));
-                            }
-                            case CLI -> {
-                                currentCommand.arguments.add(matcher.group(token.name()));
-                            }
-                            case ERROR -> {
-                                throw new UnexpectedTokenException("Unexpected token near " + matcher.group(token.name()));
-                            }
-                        }
-
-                    }
+    private Expr application() {
+        Expr left = assigmentOrCommand();
+        if (left instanceof Expr.Command) {
+            List<Token> arguments = new ArrayList<>();
+            while (match(SPACE, EQUAL)) {
+                advance();
+                arguments.add(previous());
+            }
+            ((Expr.Command) left).arguments = arguments;
+        } else {
+            if (match(SPACE)) {
+                Expr assigment = application();
+                if (assigment instanceof Expr.Command) {
+                    return assigment;
+                } else {
+                    return new Expr.Application(left, assigment);
                 }
-                position = matcher.end();
-            } else {
-                throw new IllegalStateException("UnknownTokenBegin");
+            }
+        }
+        return left;
+    }
+
+    private Expr assigmentOrCommand() {
+        if (match(WC, ECHO, CAT, PWD)) {
+            Token commandName = previous();
+            return new Expr.Command(commandName, null);
+        }
+        return equal();
+    }
+
+    private Expr equal() {
+        // TODO: 20.04.2022 change this
+        if (tokens.get(current).type == WORD &&
+                tokens.get(current + 1).type == EQUAL &&
+                tokens.get(current + 2).type == WORD
+        ) {
+            Token left = tokens.get(current);
+            Token right = tokens.get(current + 2);
+            advance();
+            advance();
+            advance();
+            return new Expr.Assignment(left, right);
+        } else {
+            return primary();
+        }
+    }
+
+    private Expr primary() {
+        if (match(WORD)) {
+            return new Expr.Literal(previous().rawText);
+        }
+
+        throw error(peek(), "Word Expect expression.");
+    }
+
+    private boolean match(TokenType... types) {
+        for (TokenType type : types) {
+            if (check(type)) {
+                advance();
+                return true;
             }
         }
 
-        return new ParseResult(assignments, commands, doubleQuotes);
+        return false;
+    }
+
+    private boolean check(TokenType tokenType) {
+        if (isAtEnd()) return false;
+        return peek().type == tokenType;
+    }
+
+    private Token advance() {
+        if (!isAtEnd()) current++;
+        return previous();
+    }
+
+    private boolean isAtEnd() {
+        return peek().type == EOF;
+    }
+
+    private Token peek() {
+        return tokens.get(current);
+    }
+
+    private Token previous() {
+        return tokens.get(current - 1);
+    }
+
+    private ParseError error(Token token, String message) {
+        Bash.error(token, message);
+        return new ParseError();
     }
 }
