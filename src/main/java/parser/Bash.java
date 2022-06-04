@@ -1,5 +1,11 @@
 package parser;
 
+import antlr.BashLexer;
+import antlr.BashParser;
+import bntler.PipelineVisitor;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -7,8 +13,6 @@ import java.util.List;
 
 public class Bash {
     private static final Interpreter interpreter = new Interpreter();
-    static boolean hadError = false;
-    static boolean hadRuntimeError = false;
 
     public static void main(String[] args) throws IOException {
         if (args.length > 1) {
@@ -25,7 +29,6 @@ public class Bash {
         for (;;) {
             System.out.print("> ");
             run(reader.readLine());
-            hadError = false;
         }
     }
 
@@ -35,36 +38,24 @@ public class Bash {
     }
 
     public static String runExternal(String source) {
-        Scanner scanner = new Scanner(source);
-        List<Token> tokens = scanner.scanTokens();
-        Parser parser = new Parser(tokens);
-        Expr statements = parser.parse();
 
-        // Stop if there was a syntax error.
-        if (hadError) return "";
-
-        return interpreter.interpret(statements);
-    }
-
-    public static void error(String message) {
-        report("", message);
-    }
-
-    private static void report(String where, String message) {
-        System.err.println("Error" + where + ": " + message);
-        hadError = true;
-    }
-
-    public static void error(Token token, String message) {
-        if (token.type == TokenType.EOF) {
-            report(" at end", message);
-        } else {
-            report(" at '" + token.rawText + "'", message);
+        if (source.isEmpty()) {
+            return "\n";
         }
-    }
 
-    public static void runtimeError(RuntimeError error) {
-        System.err.println(error.getMessage());
-        hadRuntimeError = true;
+        var input = CharStreams.fromString(source);
+        var lexer = new BashLexer(input);
+        var tokens = new CommonTokenStream(lexer);
+        var parser = new BashParser(tokens);
+        var rootNode = parser.start();
+        var rootNodeGood = new PipelineVisitor().visit(rootNode);
+        String result;
+        try {
+            result = interpreter.interpret(rootNodeGood);
+        } catch (Exception e) {
+//            e.printStackTrace(); for debug
+            result = e + "\n";
+        }
+        return result;
     }
 }

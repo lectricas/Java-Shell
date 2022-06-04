@@ -1,107 +1,72 @@
 package parser;
 
-
+import bntler.BashAssignment;
+import bntler.BashCommand;
+import bntler.BashNode;
+import bntler.BashPipeline;
 import builtins.Cat;
 import builtins.Echo;
 import builtins.Pwd;
 import builtins.Wc;
 
-public class Interpreter implements Expr.Visitor<String> {
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+public class Interpreter {
 
     private String result = "";
 
-    public static Environment environment = new Environment();
-
-    String interpret(Expr statements) {
-        try {
-            Object value = evaluate(statements);
-            return stringify(value);
-
-        } catch (RuntimeError error) {
-            Bash.runtimeError(error);
+    String interpret(BashNode node) throws Exception {
+        if (node != null) {
+            if (node instanceof BashPipeline) {
+                result = interpret(((BashPipeline) node).left());
+                result = interpret(((BashPipeline) node).right());
+            } else if (node instanceof BashCommand) {
+                return visitCommand((BashCommand) node);
+            } else if (node instanceof BashAssignment) {
+                return ((BashAssignment) node).result();
+            } else {
+                throw new IllegalStateException("Not implemented");
+            }
         }
-        return "";
+        return result;
     }
 
-    private String evaluate(Expr statements) {
-        return statements.accept(this);
-    }
-
-
-    @Override
-    public String visitPipeExpr(Expr.Pipe expr) {
-        result = evaluate(expr.left);
-        return evaluate(expr.right);
-    }
-
-    @Override
-    public String visitApplicationExpr(Expr.Application expr) {
-        evaluate(expr.left);
-        evaluate(expr.right);
-        return null;
-    }
-
-    @Override
-    public String visitCommandExpr(Expr.Command expr) {
-        switch (expr.operator.type) {
-            case WC -> {
-                return Wc.execute1(expr, result);
+    public String visitCommand(BashCommand command) throws Exception {
+        switch (command.parts().get(0)) {
+            case "wc" -> {
+                return Wc.execute(command, result);
             }
-            case ECHO -> {
-                return Echo.execute1(expr, result);
+            case "echo" -> {
+                return Echo.execute(command, result);
             }
-            case PWD -> {
-                return Pwd.execute1(expr, result);
+            case "pwd" -> {
+                return Pwd.execute(command, result);
             }
-            case CAT -> {
-                return Cat.execute1(expr, result);
+            case "cat" -> {
+                return Cat.execute(command, result);
             }
-//            case SINGLE_S ->  {
-//
-//            }
-//            case DOUBLE_S ->  {
-//
-//            }
+
             default -> {
-
+                String strCommand = String.join(" ", command.parts());
+                return executeCommand(strCommand);
             }
         }
-        return null;
     }
 
-    private String stringify(Object object) {
-        if (object == null) return "nil";
+    private String executeCommand(String command) throws Exception {
+        Process process = Runtime.getRuntime().exec(command);
+        BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        StringBuilder b = new StringBuilder();
 
-        // Hack. Work around Java adding ".0" to integer-valued doubles.
-        if (object instanceof Double) {
-            String text = object.toString();
-            if (text.endsWith(".0")) {
-                text = text.substring(0, text.length() - 2);
+        while (true) {
+            String line = in.readLine();
+            if (line == null) {
+                break;
             }
-            return text;
+            b.append(line);
+            b.append("\n");
         }
-
-        return object.toString();
-    }
-
-    @Override
-    public String visitAssignmentExpr(Expr.Assignment expr) {
-        environment.define(expr.left.rawText, expr.right.rawText);
-        return "";
-    }
-
-    @Override
-    public String visitLiteralExpr(Expr.Literal expr) {
-        // TODO: 20.04.2022 add variable
-        if (expr.value.startsWith("$")) {
-            return environment.get(expr.value.substring(1));
-        } else {
-            return expr.value;
-        }
-    }
-
-    @Override
-    public String visitUnaryExpr(Expr.Unary expr) {
-        return null;
+        return b.toString();
     }
 }
