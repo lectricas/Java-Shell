@@ -1,34 +1,24 @@
 package builtins;
 
+import bntler.BashCommand;
 import org.jetbrains.annotations.Nullable;
-import parser.*;
 
 public class Echo {
-    public static String execute1(Expr.Command command, @Nullable String stdin) {
+    public static String execute(BashCommand command, @Nullable String stdin) {
         StringBuilder echoWhat = new StringBuilder();
 
-        int i = 0;
+        int i = 1;
         boolean flag = true;
-        if (!command.arguments.isEmpty() && command.arguments.get(0).literal.equals("-n")) {
-            i = 1;
+        if (!command.parts().isEmpty() && command.parts().get(i).equals("-n")) {
+            i++;
             flag = false;
         }
 
-        for (; i < command.arguments.size(); i++) {
-            Token tok = command.arguments.get(i);
-            if (tok.type == TokenType.SINGLE_S) {
-                echoWhat.append(tok.literal);
-            } else if (tok.type == TokenType.DOUBLE_S) {
-                echoWhat.append(Bash.runExternal(tok.literal));
-            } else {
-                if (tok.literal.startsWith("$")) {
-                    String key = tok.literal.substring(1);
-                    echoWhat.append(Interpreter.environment.get(key));
-                } else {
-                    echoWhat.append(tok.literal);
-                }
+        for (; i < command.parts().size(); i++) {
+            echoWhat.append(command.parts().get(i));
+            if (i != command.parts().size() - 1) {
+                echoWhat.append(" ");
             }
-            echoWhat.append(" ");
         }
 
         if (flag) {

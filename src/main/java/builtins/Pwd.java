@@ -1,11 +1,11 @@
 package builtins;
 
-import parser.Expr;
+import bntler.BashCommand;
 
 import java.nio.file.Paths;
 
 public class Pwd {
-    public static String execute1(Expr.Command command, String stdin) {
-        return Paths.get(".").toAbsolutePath().normalize().toString();
+    public static String execute(BashCommand command, String stdin) {
+        return Paths.get(".").toAbsolutePath().normalize().toString() + "\n";
     }
 }
