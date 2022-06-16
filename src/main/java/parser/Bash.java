@@ -53,7 +53,8 @@ public class Bash {
         try {
             result = interpreter.interpret(rootNodeGood);
         } catch (Exception e) {
-//            e.printStackTrace(); for debug
+//            for debug
+//            e.printStackTrace();
             result = e + "\n";
         }
         return result;

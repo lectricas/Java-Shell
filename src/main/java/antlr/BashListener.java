@@ -1,4 +1,4 @@
-// Generated from /Users/aleksei/IdeaProjects/Java-Shell/src/main/java/antlr/Bash.g4 by ANTLR 4.10.1
+// Generated from /Users/sigmadt/Desktop/mse/SD/fork-bash/Java-Shell/src/main/java/antlr/Bash.g4 by ANTLR 4.10.1
 package antlr;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 

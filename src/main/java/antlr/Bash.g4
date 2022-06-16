@@ -25,4 +25,4 @@ assignment : name=WORD '=' value=WORD                       #wordAssignment
 SQSTR: '\'' .*? '\'';
 DQSTR: '"' .*? '"';
 
-WORD : [a-zA-Z0-9-]+;
+WORD : [a-zA-Z0-9-/.]+ ;

@@ -1,4 +1,4 @@
-// Generated from /Users/aleksei/IdeaProjects/Java-Shell/src/main/java/antlr/Bash.g4 by ANTLR 4.10.1
+// Generated from /Users/sigmadt/Desktop/mse/SD/fork-bash/Java-Shell/src/main/java/antlr/Bash.g4 by ANTLR 4.10.1
 package antlr;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
@@ -112,7 +112,7 @@ public class BashLexer extends Lexer {
 		"\u0005\u0005#\b\u0005\n\u0005\f\u0005&\t\u0005\u0001\u0005\u0001\u0005"+
 		"\u0001\u0006\u0004\u0006+\b\u0006\u000b\u0006\f\u0006,\u0002\u001b$\u0000"+
 		"\u0007\u0001\u0001\u0003\u0002\u0005\u0003\u0007\u0004\t\u0005\u000b\u0006"+
-		"\r\u0007\u0001\u0000\u0001\u0004\u0000--09AZaz0\u0000\u0001\u0001\u0000"+
+		"\r\u0007\u0001\u0000\u0001\u0003\u0000-9AZaz0\u0000\u0001\u0001\u0000"+
 		"\u0000\u0000\u0000\u0003\u0001\u0000\u0000\u0000\u0000\u0005\u0001\u0000"+
 		"\u0000\u0000\u0000\u0007\u0001\u0000\u0000\u0000\u0000\t\u0001\u0000\u0000"+
 		"\u0000\u0000\u000b\u0001\u0000\u0000\u0000\u0000\r\u0001\u0000\u0000\u0000"+
