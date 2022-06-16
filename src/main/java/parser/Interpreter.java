@@ -4,10 +4,7 @@ import bntler.BashAssignment;
 import bntler.BashCommand;
 import bntler.BashNode;
 import bntler.BashPipeline;
-import builtins.Cat;
-import builtins.Echo;
-import builtins.Pwd;
-import builtins.Wc;
+import builtins.*;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -45,6 +42,12 @@ public class Interpreter {
             }
             case "cat" -> {
                 return Cat.execute(command, result);
+            }
+            case "cd" -> {
+                return Cd.execute(command, result);
+            }
+            case "ls" -> {
+                return Ls.execute(command, result);
             }
 
             default -> {
