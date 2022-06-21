@@ -1,7 +1,6 @@
 package builtins;
 
 import bntler.BashCommand;
-import parser.Bash;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

@@ -1,5 +1,14 @@
 plugins {
     java
+    application
+}
+
+application {
+    mainClass.set("parser.Bash")
+}
+
+tasks.named<JavaExec>("run") {
+    standardInput = System.`in`
 }
 
 group = "org.example"

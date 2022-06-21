@@ -44,8 +44,8 @@ public class WordOrStringVisitor extends BashBaseVisitor<String> {
         String noQuotes = dqstr.substring(1, dqstr.length() - 1);
 
         for (Map.Entry<String, String> entry : Environment.values.entrySet()) {
-            if (noQuotes.contains("$"+entry.getKey())) {
-                noQuotes = noQuotes.replace("$"+entry.getKey(), entry.getValue());
+            if (noQuotes.contains("$" + entry.getKey())) {
+                noQuotes = noQuotes.replace("$" + entry.getKey(), entry.getValue());
             }
         }
         return noQuotes;
