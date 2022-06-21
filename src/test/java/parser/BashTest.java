@@ -42,14 +42,14 @@ public class BashTest {
 
     @Test
     public void randomCommand() {
-        String expected = "java.io.IOException: Cannot run program \"rrandom\": error=2, No such file or directory\n";
+        String expected = "Cannot run program \"rrandom\": error=2, No such file or directory\n";
         String actual = Bash.runExternal("rrandom");
         assertEquals(expected, actual);
     }
 
     @Test
     public void testSimpleVariable() {
-        String expected = "java.io.IOException: Cannot run program \"rrandom\": error=2, No such file or directory\n";
+        String expected = "Cannot run program \"rrandom\": error=2, No such file or directory\n";
         Bash.runExternal("a=rrandom");
         String actual = Bash.runExternal("$a");
         assertEquals(expected, actual);
@@ -72,7 +72,7 @@ public class BashTest {
 
     @Test
     public void testSimpleVariableWithDString() {
-        String expected = "java.io.IOException: Cannot run program \"rrandom\": error=2, No such file or directory\n";
+        String expected = "Cannot run program \"rrandom\": error=2, No such file or directory\n";
         Bash.runExternal("a=rrandom");
         String actual = Bash.runExternal("\"$a\"");
         assertEquals(expected, actual);
@@ -80,7 +80,7 @@ public class BashTest {
 
     @Test
     public void testSimpleVariableWithSString() {
-        String expected = "java.io.IOException: Cannot run program \"$a\": error=2, No such file or directory\n";
+        String expected = "Cannot run program \"$a\": error=2, No such file or directory\n";
         Bash.runExternal("a=rrandom");
         String actual = Bash.runExternal("'$a'");
         assertEquals(expected, actual);

@@ -51,11 +51,10 @@ public class Bash {
         var rootNodeGood = new PipelineVisitor().visit(rootNode);
         String result;
         try {
-            result = interpreter.interpret(rootNodeGood);
+            return interpreter.interpret(rootNodeGood);
         } catch (Exception e) {
 //            e.printStackTrace(); for debug
-            result = e + "\n";
+            return e.getMessage() + "\n";
         }
-        return result;
     }
 }

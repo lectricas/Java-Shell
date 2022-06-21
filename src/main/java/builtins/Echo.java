@@ -9,7 +9,7 @@ public class Echo {
 
         int i = 1;
         boolean flag = true;
-        if (!command.parts().isEmpty() && command.parts().get(i).equals("-n")) {
+        if (command.parts().size() > 1 && command.parts().get(i).equals("-n")) {
             i++;
             flag = false;
         }
